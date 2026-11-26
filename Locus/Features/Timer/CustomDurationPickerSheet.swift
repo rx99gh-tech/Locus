@@ -28,17 +28,17 @@ struct CustomDurationPickerSheet: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
-                Text("Выберите длительность")
+                Text("选择时长")
                     .font(.headline)
                     .padding(.top, 16)
 
                 HStack(spacing: 0) {
                     // Hours
                     VStack {
-                        Text("Часы")
+                        Text("小时")
                             .font(.caption)
                             .foregroundStyle(.secondary)
-                        Picker("Часы", selection: $hours) {
+                        Picker("小时", selection: $hours) {
                             ForEach(0...12, id: \.self) { h in
                                 Text("\(h)").tag(h)
                             }
@@ -48,10 +48,10 @@ struct CustomDurationPickerSheet: View {
 
                     // Minutes
                     VStack {
-                        Text("Минуты")
+                        Text("分钟")
                             .font(.caption)
                             .foregroundStyle(.secondary)
-                        Picker("Минуты", selection: $minutes) {
+                        Picker("分钟", selection: $minutes) {
                             ForEach(0...59, id: \.self) { m in
                                 Text("\(m)").tag(m)
                             }
@@ -61,10 +61,10 @@ struct CustomDurationPickerSheet: View {
 
                     // Seconds
                     VStack {
-                        Text("Секунды")
+                        Text("秒")
                             .font(.caption)
                             .foregroundStyle(.secondary)
-                        Picker("Секунды", selection: $seconds) {
+                        Picker("秒", selection: $seconds) {
                             ForEach(0...59, id: \.self) { s in
                                 Text("\(s)").tag(s)
                             }
@@ -87,18 +87,18 @@ struct CustomDurationPickerSheet: View {
                 Button {
                     let totalSec = TimeInterval(hours * 3600 + minutes * 60 + seconds)
                     if totalSec < 5 {
-                        errorMessage = "Минимальное время — 5 секунд"
+                        errorMessage = "最短时长为 5 秒"
                         return
                     }
                     if totalSec > 43200 {
-                        errorMessage = "Максимальное время — 12 часов"
+                        errorMessage = "最长时长为 12 小时"
                         return
                     }
 
                     onSelect(totalSec)
                     dismiss()
                 } label: {
-                    Text("Установить длительность")
+                    Text("设置时长")
                         .font(.headline)
                         .foregroundStyle(.black)
                         .frame(maxWidth: .infinity)
@@ -109,11 +109,11 @@ struct CustomDurationPickerSheet: View {
                 .buttonStyle(.plain)
                 .padding(.bottom, 24)
             }
-            .navigationTitle("Своё время")
+            .navigationTitle("自定义时长")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Отмена") { dismiss() }
+                    Button("取消") { dismiss() }
                 }
             }
         }

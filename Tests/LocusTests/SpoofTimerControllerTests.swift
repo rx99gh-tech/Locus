@@ -250,7 +250,7 @@ final class SpoofTimerControllerTests: XCTestCase {
         try? await Task.sleep(nanoseconds: 50_000_000)
 
         XCTAssertEqual(controller.state, .finished)
-        XCTAssertEqual(controller.finishedMessage, "Реальная локация восстановлена")
+        XCTAssertEqual(controller.finishedMessage, "已恢复真实定位")
         XCTAssertEqual(simulationService.clearLocationCallCount, 1)
         XCTAssertFalse(audioKeepAlive.isStarted)
     }
@@ -327,6 +327,6 @@ final class SpoofTimerControllerTests: XCTestCase {
 
         XCTAssertEqual(freshController.state, .finished)
         XCTAssertEqual(simulationService.clearLocationCallCount, 1)
-        XCTAssertEqual(freshController.finishedMessage, "Реальная локация восстановлена")
+        XCTAssertEqual(freshController.finishedMessage, "已恢复真实定位")
     }
 }

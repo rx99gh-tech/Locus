@@ -189,7 +189,7 @@ final class SpoofTimerController: ObservableObject {
         audioKeepAlive.start()
         notificationManager.scheduleTimerExpiry(
             at: endDate,
-            body: "Время вышло, открой приложение, чтобы вернуть локацию"
+            body: "定时已结束，请打开 Locus 恢复真实定位"
         )
 
         // 4. Persist and start ticker
@@ -224,7 +224,7 @@ final class SpoofTimerController: ObservableObject {
         audioKeepAlive.start()
         notificationManager.scheduleTimerExpiry(
             at: endDate,
-            body: "Время вышло, открой приложение, чтобы вернуть локацию"
+            body: "定时已结束，请打开 Locus 恢复真实定位"
         )
         persistState()
         startTicker()
@@ -263,7 +263,7 @@ final class SpoofTimerController: ObservableObject {
 
             notificationManager.scheduleTimerExpiry(
                 at: newEndDate,
-                body: "Время вышло, открой приложение, чтобы вернуть локацию"
+                body: "定时已结束，请打开 Locus 恢复真实定位"
             )
             persistState()
 
@@ -303,7 +303,7 @@ final class SpoofTimerController: ObservableObject {
             try await simulationService.clearLocation()
             isClearing = false
             state = .finished
-            finishedMessage = "Реальная локация восстановлена"
+            finishedMessage = "已恢复真实定位"
             clearPersistedState()
             triggerHapticFeedback()
         } catch {
@@ -456,10 +456,10 @@ final class SpoofTimerController: ObservableObject {
         if clearSuccess {
             activeCoordinate = nil
             state = .finished
-            finishedMessage = "Реальная локация восстановлена"
+            finishedMessage = "已恢复真实定位"
             triggerHapticFeedback()
         } else {
-            let errorMsg = lastClearError?.localizedDescription ?? "Не удалось сбросить симуляцию"
+            let errorMsg = lastClearError?.localizedDescription ?? "无法结束定位模拟"
             state = .failed(error: errorMsg)
         }
     }

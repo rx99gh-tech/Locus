@@ -14,12 +14,12 @@ struct SpoofTimerView: View {
     @State private var actionError: String?
 
     private let presets: [(label: String, seconds: TimeInterval)] = [
-        ("30 с", 30),
-        ("1 мин", 60),
-        ("5 мин", 300),
-        ("15 мин", 900),
-        ("30 мин", 1800),
-        ("1 ч", 3600)
+        ("30 秒", 30),
+        ("1 分钟", 60),
+        ("5 分钟", 300),
+        ("15 分钟", 900),
+        ("30 分钟", 1800),
+        ("1 小时", 3600)
     ]
 
     var body: some View {
@@ -68,8 +68,8 @@ struct SpoofTimerView: View {
                 handlePinChanged()
             }
         }
-        .alert("Переместить симуляцию?", isPresented: $showMoveConfirmation) {
-            Button("Переместить сейчас", role: .none) {
+        .alert("移动模拟位置？", isPresented: $showMoveConfirmation) {
+            Button("立即移动", role: .none) {
                 if let target = pendingPointChange {
                     Task {
                         do {
@@ -86,20 +86,20 @@ struct SpoofTimerView: View {
                 }
                 pendingPointChange = nil
             }
-            Button("Отмена", role: .cancel) {
+            Button("取消", role: .cancel) {
                 if let active = timerController.activeCoordinate {
                     session.pin = active
                 }
                 pendingPointChange = nil
             }
         } message: {
-            Text("Таймер продолжит обратный отсчёт в новой точке.")
+            Text("移动到新位置后，定时器将继续倒计时。")
         }
-        .alert("Ошибка", isPresented: Binding(
+        .alert("错误", isPresented: Binding(
             get: { actionError != nil },
             set: { if !$0 { actionError = nil } }
         )) {
-            Button("OK", role: .cancel) { actionError = nil }
+            Button("确定", role: .cancel) { actionError = nil }
         } message: {
             Text(actionError ?? "")
         }
@@ -109,7 +109,7 @@ struct SpoofTimerView: View {
 
     private var headerRow: some View {
         HStack {
-            Text("Таймер спуфинга")
+            Text("定位模拟定时器")
                 .font(.headline.weight(.semibold))
                 .foregroundStyle(.primary)
 
@@ -132,21 +132,21 @@ struct SpoofTimerView: View {
         .padding(.horizontal, 10)
         .padding(.vertical, 5)
         .background(Capsule().fill(color.opacity(0.12)))
-        .accessibilityLabel("Статус таймера: \(text)")
+        .accessibilityLabel("定时器状态：\(text)")
     }
 
     private var statusBadgeInfo: (Color, String) {
         switch timerController.state {
         case .idle:
-            return (.secondary, "Ожидание")
+            return (.secondary, "待开始")
         case .running:
-            return (LocusTheme.statusGood, "Активен")
+            return (LocusTheme.statusGood, "运行中")
         case .paused:
-            return (LocusTheme.statusWarn, "На паузе")
+            return (LocusTheme.statusWarn, "已暂停")
         case .finished:
-            return (LocusTheme.accent, "Завершён")
+            return (LocusTheme.accent, "已结束")
         case .failed:
-            return (LocusTheme.danger, "Ошибка")
+            return (LocusTheme.danger, "错误")
         }
     }
 
@@ -156,7 +156,7 @@ struct SpoofTimerView: View {
             .foregroundStyle(.primary)
             .lineLimit(1)
             .minimumScaleFactor(0.6)
-            .accessibilityLabel("Осталось времени: \(formattedRemainingTime)")
+            .accessibilityLabel("剩余时间：\(formattedRemainingTime)")
     }
 
     private var progressBar: some View {
@@ -204,9 +204,9 @@ struct SpoofTimerView: View {
                             .foregroundStyle(LocusTheme.accent)
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("Редактировать координаты вручную")
+                    .accessibilityLabel("手动编辑坐标")
                 } else {
-                    Text("Выберите точку на карте")
+                    Text("请在地图上选择一个位置")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -245,7 +245,7 @@ struct SpoofTimerView: View {
                     }
                     .buttonStyle(.plain)
                     .disabled(isTimerActive)
-                    .accessibilityLabel("Установить время \(preset.label)")
+                    .accessibilityLabel("设置时长为\(preset.label)")
                 }
 
                 Button {
@@ -253,7 +253,7 @@ struct SpoofTimerView: View {
                 } label: {
                     HStack(spacing: 4) {
                         Image(systemName: "slider.horizontal.3")
-                        Text("Своё")
+                        Text("自定义")
                     }
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.primary)
@@ -264,7 +264,7 @@ struct SpoofTimerView: View {
                 }
                 .buttonStyle(.plain)
                 .disabled(isTimerActive)
-                .accessibilityLabel("Настроить своё время")
+                .accessibilityLabel("设置自定义时长")
             }
         }
     }
@@ -279,7 +279,7 @@ struct SpoofTimerView: View {
                     } label: {
                         HStack(spacing: 4) {
                             Image(systemName: "minus.circle")
-                            Text("-1 мин")
+                            Text("−1 分钟")
                         }
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(canDecreaseTime ? .primary : .secondary)
@@ -289,14 +289,14 @@ struct SpoofTimerView: View {
                     }
                     .buttonStyle(.plain)
                     .disabled(!canDecreaseTime)
-                    .accessibilityLabel("Уменьшить время на 1 минуту")
+                    .accessibilityLabel("减少 1 分钟")
 
                     Button {
                         timerController.adjustRemaining(by: 60)
                     } label: {
                         HStack(spacing: 4) {
                             Image(systemName: "plus.circle")
-                            Text("+1 мин")
+                            Text("+1 分钟")
                         }
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.primary)
@@ -305,7 +305,7 @@ struct SpoofTimerView: View {
                         .background(Capsule().fill(Color.primary.opacity(0.08)))
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("Увеличить время на 1 минуту")
+                    .accessibilityLabel("增加 1 分钟")
                 }
             }
 
@@ -318,7 +318,7 @@ struct SpoofTimerView: View {
                     } label: {
                         HStack {
                             Image(systemName: "play.fill")
-                            Text("Старт таймера")
+                            Text("启动定时器")
                         }
                         .font(.headline.weight(.bold))
                         .foregroundStyle(.black)
@@ -328,7 +328,7 @@ struct SpoofTimerView: View {
                     }
                     .buttonStyle(.plain)
                     .disabled(targetCoordinate == nil || !pairing.hasPairingFile)
-                    .accessibilityLabel("Запустить таймер спуфинга")
+                    .accessibilityLabel("启动定位模拟定时器")
 
                 case .running:
                     Button {
@@ -336,7 +336,7 @@ struct SpoofTimerView: View {
                     } label: {
                         HStack {
                             Image(systemName: "pause.fill")
-                            Text("Пауза")
+                            Text("暂停")
                         }
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.primary)
@@ -345,14 +345,14 @@ struct SpoofTimerView: View {
                         .background(Capsule().fill(Color.primary.opacity(0.12)))
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("Поставить таймер на паузу")
+                    .accessibilityLabel("暂停定时器")
 
                     Button {
                         Task { await timerController.stop() }
                     } label: {
                         HStack {
                             Image(systemName: "stop.fill")
-                            Text("Стоп")
+                            Text("停止")
                         }
                         .font(.headline.weight(.bold))
                         .foregroundStyle(.white)
@@ -361,7 +361,7 @@ struct SpoofTimerView: View {
                         .background(Capsule().fill(LocusTheme.danger))
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("Остановить таймер и сбросить локацию")
+                    .accessibilityLabel("停止定时器并恢复真实定位")
 
                 case .paused:
                     Button {
@@ -372,7 +372,7 @@ struct SpoofTimerView: View {
                     } label: {
                         HStack {
                             Image(systemName: "play.fill")
-                            Text("Продолжить")
+                            Text("继续")
                         }
                         .font(.headline.weight(.bold))
                         .foregroundStyle(.black)
@@ -381,14 +381,14 @@ struct SpoofTimerView: View {
                         .background(Capsule().fill(LocusTheme.accent))
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("Продолжить работу таймера")
+                    .accessibilityLabel("继续倒计时")
 
                     Button {
                         Task { await timerController.stop() }
                     } label: {
                         HStack {
                             Image(systemName: "stop.fill")
-                            Text("Стоп")
+                            Text("停止")
                         }
                         .font(.headline.weight(.bold))
                         .foregroundStyle(.white)
@@ -397,7 +397,7 @@ struct SpoofTimerView: View {
                         .background(Capsule().fill(LocusTheme.danger))
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("Остановить таймер и сбросить локацию")
+                    .accessibilityLabel("停止定时器并恢复真实定位")
                 }
             }
         }
@@ -409,7 +409,7 @@ struct SpoofTimerView: View {
                 .foregroundStyle(LocusTheme.danger)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("Ошибка сброса локации")
+                Text("无法恢复真实定位")
                     .font(.caption.weight(.bold))
                     .foregroundStyle(.primary)
                 Text(message)
@@ -424,7 +424,7 @@ struct SpoofTimerView: View {
                     await timerController.retryClearManual()
                 }
             } label: {
-                Text(timerController.isClearing ? "Сброс…" : "Сбросить сейчас")
+                Text(timerController.isClearing ? "正在恢复…" : "立即恢复")
                     .font(.caption.weight(.bold))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 10)
@@ -490,12 +490,12 @@ struct SpoofTimerView: View {
 
     private func startTimer() {
         guard let coord = targetCoordinate else {
-            actionError = "Пожалуйста, выберите точку на карте"
+            actionError = "请先在地图上选择一个位置"
             return
         }
 
         guard pairing.hasPairingFile else {
-            actionError = "Импортируйте файл RPPairing в Настройках"
+            actionError = "请先在「设置」中导入 RPPairing 文件"
             return
         }
 

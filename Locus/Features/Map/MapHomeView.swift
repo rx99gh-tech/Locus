@@ -87,7 +87,7 @@ struct MapHomeView: View {
                         }
                     }
                     if let sim = session.simulated {
-                        Annotation("Spoof", coordinate: sim) {
+                        Annotation("模拟位置", coordinate: sim) {
                             ZStack {
                                 Circle().fill(LocusTheme.accent.opacity(0.25)).frame(width: 44, height: 44)
                                 Circle().fill(LocusTheme.accent).frame(width: 14, height: 14)
@@ -193,7 +193,7 @@ struct MapHomeView: View {
         HStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(.secondary)
-            TextField("Search places", text: $searchText)
+            TextField("搜索地点", text: $searchText)
                 .textInputAutocapitalization(.words)
                 .focused($searchFocused)
                 .submitLabel(.search)
@@ -213,10 +213,10 @@ struct MapHomeView: View {
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("Clear and dismiss keyboard")
+                .accessibilityLabel("清空搜索并收起键盘")
             }
             if searchFocused {
-                Button("Done") {
+                Button("完成") {
                     searchFocused = false
                 }
                 .font(.subheadline.weight(.semibold))
@@ -299,7 +299,7 @@ struct MapHomeView: View {
         .locusGlass(.interactive, in: Circle())
         .foregroundStyle(.primary)
         .contentShape(Circle())
-        .accessibilityLabel("Current location")
+        .accessibilityLabel("当前位置")
     }
 
     /// Centers on the spoofed fix while spoofing, otherwise the real GPS —
@@ -367,7 +367,7 @@ struct MapHomeView: View {
     private func buildRoadRoute() {
         guard let start = routeStart ?? session.simulated ?? session.pin,
               let end = routeEnd else {
-            session.lastError = "Set a route start and end."
+            session.lastError = "请设置路线的起点和终点。"
             return
         }
         isRouting = true
@@ -390,7 +390,7 @@ struct MapHomeView: View {
     private func playRoute() {
         let path = routeCoords.isEmpty ? drawnPath : routeCoords
         guard path.count >= 2 else {
-            session.lastError = "Build or draw a route first."
+            session.lastError = "请先生成或绘制一条路线。"
             return
         }
         showRouteSheet = false
@@ -413,11 +413,11 @@ struct MapHomeView: View {
     private func exportGPX() {
         let path = routeCoords.isEmpty ? drawnPath : routeCoords
         guard !path.isEmpty else {
-            session.lastError = "Nothing to export."
+            session.lastError = "没有可导出的路线。"
             return
         }
         let gpx = GPXCodec.export(path)
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent("Locus-Route.gpx")
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("Locus-路线.gpx")
         do {
             try gpx.data(using: .utf8)?.write(to: url)
             let av = UIActivityViewController(activityItems: [url], applicationActivities: nil)

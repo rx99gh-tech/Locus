@@ -21,9 +21,9 @@ struct ManualCoordinateSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section(header: Text("Координаты / Coordinates")) {
+                Section(header: Text("坐标")) {
                     HStack {
-                        Text("Широта (Lat):")
+                        Text("纬度")
                             .font(.subheadline)
                         TextField("-90.0 ... 90.0", text: $latText)
                             .keyboardType(.numbersAndPunctuation)
@@ -31,7 +31,7 @@ struct ManualCoordinateSheet: View {
                     }
 
                     HStack {
-                        Text("Долгота (Lon):")
+                        Text("经度")
                             .font(.subheadline)
                         TextField("-180.0 ... 180.0", text: $lonText)
                             .keyboardType(.numbersAndPunctuation)
@@ -43,7 +43,7 @@ struct ManualCoordinateSheet: View {
                     } label: {
                         HStack {
                             Image(systemName: "doc.on.clipboard")
-                            Text("Вставить из буфера обмена")
+                            Text("从剪贴板粘贴")
                         }
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(LocusTheme.accent)
@@ -62,18 +62,18 @@ struct ManualCoordinateSheet: View {
                     Button {
                         applyCoordinates()
                     } label: {
-                        Text("Применить координаты")
+                        Text("应用坐标")
                             .font(.headline)
                             .frame(maxWidth: .infinity, alignment: .center)
                             .foregroundStyle(LocusTheme.accent)
                     }
                 }
             }
-            .navigationTitle("Ввод координат")
+            .navigationTitle("输入坐标")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Отмена") { dismiss() }
+                    Button("取消") { dismiss() }
                 }
             }
         }
@@ -84,17 +84,17 @@ struct ManualCoordinateSheet: View {
         let cleanLon = lonText.replacingOccurrences(of: ",", with: ".").trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard let lat = Double(cleanLat), let lon = Double(cleanLon) else {
-            validationError = "Введите корректные числа для широты и долготы"
+            validationError = "请输入有效的经纬度数值"
             return
         }
 
         guard lat >= -90.0 && lat <= 90.0 else {
-            validationError = "Широта должна быть в диапазоне от -90 до 90"
+            validationError = "纬度必须介于 -90 和 90 之间"
             return
         }
 
         guard lon >= -180.0 && lon <= 180.0 else {
-            validationError = "Долгота должна быть в диапазоне от -180 до 180"
+            validationError = "经度必须介于 -180 和 180 之间"
             return
         }
 
@@ -106,7 +106,7 @@ struct ManualCoordinateSheet: View {
 
     private func pasteFromClipboard() {
         guard let text = UIPasteboard.general.string?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty else {
-            validationError = "Буфер обмена пуст"
+            validationError = "剪贴板为空"
             return
         }
 
@@ -118,7 +118,7 @@ struct ManualCoordinateSheet: View {
             lonText = String(format: "%.6f", match.longitude)
             validationError = nil
         } else {
-            validationError = "Не удалось распознать координаты в буфере обмена"
+            validationError = "无法识别剪贴板中的坐标"
         }
     }
 

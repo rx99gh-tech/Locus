@@ -36,11 +36,11 @@ struct RootView: View {
                     SpoofTimerView()
                         .padding()
                 }
-                .navigationTitle("Таймер спуфинга")
+                .navigationTitle("定位模拟定时器")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
-                        Button("Закрыть") { showTimer = false }
+                        Button("关闭") { showTimer = false }
                     }
                 }
             }
@@ -63,7 +63,7 @@ struct RootView: View {
             get: { session.lastError != nil },
             set: { if !$0 { session.lastError = nil } }
         )) {
-            Button("OK", role: .cancel) { session.lastError = nil }
+            Button("确定", role: .cancel) { session.lastError = nil }
         } message: {
             Text(session.lastError ?? "")
         }
@@ -86,9 +86,9 @@ struct StatusBarView: View {
     private var display: Display {
         switch timerController.state {
         case .running:
-            return .status("Таймер: \(formatTime(timerController.remainingSeconds))")
+            return .status("定时器：\(formatTime(timerController.remainingSeconds))")
         case .paused:
-            return .status("Пауза: \(formatTime(timerController.remainingSeconds))")
+            return .status("已暂停：\(formatTime(timerController.remainingSeconds))")
         default:
             break
         }
@@ -97,13 +97,13 @@ struct StatusBarView: View {
         case .idle:
             return tunnelConnected ? .notSpoofing : .connectVPN
         case .connecting:
-            return .status("Connecting…")
+            return .status("正在连接…")
         case .active:
-            return .status("Spoofing")
+            return .status("正在模拟定位")
         case .reconnecting:
-            return .status("Reconnecting…")
+            return .status("正在重新连接…")
         case .dropped(let reason):
-            return .status(reason.isEmpty ? "Disconnected" : "Disconnected — \(reason)")
+            return .status(reason.isEmpty ? "连接已断开" : "连接已断开：\(reason)")
         }
     }
 
@@ -134,8 +134,8 @@ struct StatusBarView: View {
 
     private var title: String {
         switch display {
-        case .notSpoofing: return "Not Spoofing"
-        case .connectVPN: return "Connect LocalDevVPN"
+        case .notSpoofing: return "未模拟定位"
+        case .connectVPN: return "连接 LocalDevVPN"
         case .status(let text): return text
         }
     }
@@ -279,7 +279,7 @@ struct BottomControlsView: View {
                 } label: {
                     HStack(spacing: 6) {
                         Image(systemName: "dot.circle.and.hand.point.up.left.fill")
-                        Text(session.joystickActive ? "On" : "Joy")
+                        Text(session.joystickActive ? "已启用" : "摇杆")
                             .lineLimit(1)
                     }
                     .font(.subheadline.weight(.semibold))
@@ -300,7 +300,7 @@ struct BottomControlsView: View {
                         }
                         session.stop(pairing: pairing)
                     } label: {
-                        Text("Stop")
+                        Text("停止")
                             .font(.subheadline.weight(.bold))
                             .foregroundStyle(.white)
                             .frame(minWidth: 72)
@@ -313,12 +313,12 @@ struct BottomControlsView: View {
                 } else {
                     Button {
                         guard let pin = session.pin else {
-                            session.lastError = "Tap the map to drop a pin first."
+                            session.lastError = "请先点击地图添加标记。"
                             return
                         }
                         session.teleport(to: pin, pairing: pairing)
                     } label: {
-                        Text("Teleport")
+                        Text("传送")
                             .font(.subheadline.weight(.bold))
                             .foregroundStyle(.black)
                             .frame(minWidth: 96)

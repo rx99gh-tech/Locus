@@ -3,6 +3,8 @@ name: Build iOS IPA
 on:
   workflow_dispatch:
   push:
+    branches: [ main, master, codex/locus-zh-cn ]
+  pull_request:
     branches: [ main, master ]
     paths-ignore:
       - '**.md'
@@ -136,7 +138,7 @@ jobs:
               exit 1
             }
 
-      - name: 📦 Package into Locus-Timer.ipa
+      - name: 📦 Package into Locus-Timer-CN.ipa
         run: |
           mkdir -p build/Payload
           APP_PATH=$(find build/Locus.xcarchive/Products/Applications -name "*.app" -type d | head -n 1)
@@ -147,26 +149,26 @@ jobs:
           fi
           cp -r "$APP_PATH" build/Payload/
           cd build
-          zip -r Locus-Timer.ipa Payload
+          zip -r Locus-Timer-CN.ipa Payload
           cd ..
           echo "### 🎉 IPA Successfully Built" >> $GITHUB_STEP_SUMMARY
-          ls -lh build/Locus-Timer.ipa
+          ls -lh build/Locus-Timer-CN.ipa
 
-      - name: 🚀 Upload Locus-Timer.ipa artifact
+      - name: 🚀 Upload Locus-Timer-CN.ipa artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Locus-Timer-ipa
-          path: build/Locus-Timer.ipa
+          name: Locus-Timer-CN-ipa
+          path: build/Locus-Timer-CN.ipa
           retention-days: 14
 
       - name: 🌟 Create GitHub Release with IPA
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
         with:
           tag_name: v1.0.${{ github.run_number }}
           name: "Locus-Timer v1.0.${{ github.run_number }}"
           body: "Готовый к установке iOS IPA файл Locus с таймером и фоновым режимом, собранный через GitHub Actions без платного аккаунта Apple."
-          files: build/Locus-Timer.ipa
+          files: build/Locus-Timer-CN.ipa
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

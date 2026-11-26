@@ -17,7 +17,7 @@ enum RouteBuilder {
         let directions = MKDirections(request: request)
         let response = try await directions.calculate()
         guard let route = response.routes.first else {
-            throw NSError(domain: "Locus", code: 1, userInfo: [NSLocalizedDescriptionKey: "No route found"])
+            throw NSError(domain: "Locus", code: 1, userInfo: [NSLocalizedDescriptionKey: "未找到路线"])
         }
         return sample(polyline: route.polyline, every: 12)
     }
@@ -79,12 +79,12 @@ enum GPXCodec {
             }
         }
         guard !coords.isEmpty else {
-            throw NSError(domain: "Locus", code: 2, userInfo: [NSLocalizedDescriptionKey: "No track points found in GPX"])
+            throw NSError(domain: "Locus", code: 2, userInfo: [NSLocalizedDescriptionKey: "GPX 文件中没有轨迹点"])
         }
         return coords
     }
 
-    static func export(_ coordinates: [CLLocationCoordinate2D], name: String = "Locus Route") -> String {
+    static func export(_ coordinates: [CLLocationCoordinate2D], name: String = "Locus 路线") -> String {
         var body = """
         <?xml version="1.0" encoding="UTF-8"?>
         <gpx version="1.1" creator="Locus" xmlns="http://www.topografix.com/GPX/1/1">
