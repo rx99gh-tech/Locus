@@ -49,7 +49,7 @@ jobs:
         run: xcodegen generate
 
       - name: 🧪 Run Unit Tests on iOS Simulator
-            run: |
+        run: |
           SIM_NAME="iPhone 16"
           if ! xcrun simctl list devices available | grep -q "iPhone 16"; then
             SIM_NAME=$(xcrun simctl list devices available | grep "iPhone" | head -n 1 | sed -E 's/^[ ]+//; s/ \([A-F0-9-]+\).*//')
