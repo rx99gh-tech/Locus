@@ -50,26 +50,40 @@ jobs:
 
       - name: 🧪 Run Unit Tests on iOS Simulator
         run: |
-          SIM_NAME="iPhone 16"
-          if ! xcrun simctl list devices available | grep -q "iPhone 16"; then
-            SIM_NAME=$(xcrun simctl list devices available | grep "iPhone" | head -n 1 | sed -E 's/^[ ]+//; s/ \([A-F0-9-]+\).*//')
-          fi
+          SIM_ID=$(xcrun simctl list devices available -j | python3 -c '
+          import json, sys
+          devices = [device for runtime in json.load(sys.stdin)["devices"].values()
+                     for device in runtime if device["name"].startswith("iPhone")]
+          devices.sort(key=lambda device: device["name"] != "iPhone 16")
+          sys.exit("No iPhone simulator is available") if not devices else print(devices[0]["udid"])
+          ')
           FFI_FIXTURE_DIR="$(mktemp -d)"
           xcrun --sdk iphonesimulator clang \
             -target arm64-apple-ios18.0-simulator \
             -isysroot "$(xcrun --sdk iphonesimulator --show-sdk-path)" \
             -I Vendor/idevice -c Tests/Fixtures/SimulatorIdevice.c -o "$FFI_FIXTURE_DIR/idevice.o"
           xcrun libtool -static -o "$FFI_FIXTURE_DIR/libidevice_ffi.a" "$FFI_FIXTURE_DIR/idevice.o"
-          echo "Running tests on simulator: ${SIM_NAME:-iPhone 16}"
+          xcrun simctl bootstatus "$SIM_ID" -b
+          set -o pipefail
           xcodebuild test \
             -project Locus.xcodeproj \
             -scheme Locus \
-            -destination "platform=iOS Simulator,name=${SIM_NAME:-iPhone 16}" \
+            -destination "platform=iOS Simulator,id=$SIM_ID" \
+            -parallel-testing-enabled NO \
             -resultBundlePath "$RUNNER_TEMP/LocusTests.xcresult" \
             "LIBRARY_SEARCH_PATHS=$FFI_FIXTURE_DIR" \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY=""
+            CODE_SIGN_IDENTITY="" 2>&1 | tee "$RUNNER_TEMP/LocusTests.log" || {
+              TEST_STATUS=$?
+              TEST_FAILURES=$(grep -E 'error:|failed|Testing failed|Unable to' "$RUNNER_TEMP/LocusTests.log" | tail -12 | cut -c1-500 || true)
+              while IFS= read -r line; do
+                if [ -n "$line" ]; then
+                  printf '::error::%s\n' "${line//%/%25}"
+                fi
+              done <<< "$TEST_FAILURES"
+              exit "$TEST_STATUS"
+            }
 
       - name: Summarize simulator test results
         if: always()
