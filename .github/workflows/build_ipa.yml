@@ -4,6 +4,9 @@ on:
   workflow_dispatch:
   push:
     branches: [ main, master, codex/locus-zh-cn ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
   pull_request:
     branches: [ main, master ]
     paths-ignore:
@@ -21,7 +24,6 @@ jobs:
   test:
     name: 🧪 Run Unit Tests
     runs-on: macos-15
-    continue-on-error: true
     steps:
       - name: ⬇️ Checkout repository
         uses: actions/checkout@v4
@@ -47,20 +49,36 @@ jobs:
         run: xcodegen generate
 
       - name: 🧪 Run Unit Tests on iOS Simulator
-        continue-on-error: true
-        run: |
+            run: |
           SIM_NAME="iPhone 16"
           if ! xcrun simctl list devices available | grep -q "iPhone 16"; then
             SIM_NAME=$(xcrun simctl list devices available | grep "iPhone" | head -n 1 | sed -E 's/^[ ]+//; s/ \([A-F0-9-]+\).*//')
           fi
+          FFI_FIXTURE_DIR="$(mktemp -d)"
+          xcrun --sdk iphonesimulator clang \
+            -target arm64-apple-ios18.0-simulator \
+            -isysroot "$(xcrun --sdk iphonesimulator --show-sdk-path)" \
+            -I Vendor/idevice -c Tests/Fixtures/SimulatorIdevice.c -o "$FFI_FIXTURE_DIR/idevice.o"
+          xcrun libtool -static -o "$FFI_FIXTURE_DIR/libidevice_ffi.a" "$FFI_FIXTURE_DIR/idevice.o"
           echo "Running tests on simulator: ${SIM_NAME:-iPhone 16}"
           xcodebuild test \
             -project Locus.xcodeproj \
             -scheme Locus \
             -destination "platform=iOS Simulator,name=${SIM_NAME:-iPhone 16}" \
+            -resultBundlePath "$RUNNER_TEMP/LocusTests.xcresult" \
+            "LIBRARY_SEARCH_PATHS=$FFI_FIXTURE_DIR" \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY=""
+
+      - name: Summarize simulator test results
+        if: always()
+        run: |
+          RESULT="$RUNNER_TEMP/LocusTests.xcresult"
+          if [ -d "$RESULT" ]; then
+            xcrun xcresulttool get test-results summary --path "$RESULT" --compact \
+              | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
 
   build-ipa:
     name: 📱 Build iOS IPA
