@@ -319,6 +319,8 @@ final class SpoofTimerController: ObservableObject {
         let now = clock.now()
         if now >= endDate {
             Task { @MainActor in
+                guard case .running(let currentEndDate, _) = state,
+                      currentEndDate == endDate else { return }
                 await onExpiry()
             }
         } else {
@@ -374,8 +376,9 @@ final class SpoofTimerController: ObservableObject {
         tickTask = Task { [weak self] in
             while !Task.isCancelled {
                 try? await Task.sleep(nanoseconds: 250_000_000) // ~0.25s
-                guard let self else { break }
-                await self.tick()
+                guard !Task.isCancelled, let self else { break }
+                guard self.state.isRunning else { break }
+                self.handleAppForeground()
             }
         }
     }
@@ -383,20 +386,6 @@ final class SpoofTimerController: ObservableObject {
     private func stopTicker() {
         tickTask?.cancel()
         tickTask = nil
-    }
-
-    private func tick() async {
-        guard case .running(let endDate, _) = state else {
-            stopTicker()
-            return
-        }
-
-        let now = clock.now()
-        if now >= endDate {
-            await onExpiry()
-        } else {
-            updateDisplayValues()
-        }
     }
 
     private func updateDisplayValues() {
@@ -424,6 +413,8 @@ final class SpoofTimerController: ObservableObject {
     }
 
     private func onExpiry() async {
+        guard !isClearing else { return }
+        isClearing = true
         stopTicker()
         audioKeepAlive.stop()
         notificationManager.cancelTimerExpiry()
@@ -431,7 +422,6 @@ final class SpoofTimerController: ObservableObject {
 
         remainingSeconds = 0
         progress = 1.0
-        isClearing = true
 
         // Retry clear up to 3 times with 1-second delay
         var clearSuccess = false
